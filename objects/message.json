@@ -1,0 +1,6 @@
+{
+    "from": "string",
+    "to": "string",
+    "sendingTime": "dateTime",
+    "chatRoom": "string (personal/chat)"
+}

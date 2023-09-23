@@ -1,0 +1,5 @@
+{
+    "username": "string",
+    "passwordHash": "string",
+    "roles": ["string (admin/user)"]
+}

@@ -1,0 +1,9 @@
+{
+    "chatName": "string",
+    "roomId": "string",
+    "adminsIds": ["string"],
+    "membersIds": ["string"],
+    "blockedIds": ["string"],
+    "waitingsIds": ["string"],
+    "isOpenedGroup": "boolean"
+}
