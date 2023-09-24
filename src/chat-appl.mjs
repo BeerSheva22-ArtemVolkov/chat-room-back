@@ -5,6 +5,7 @@ import expressWs from 'express-ws'
 import ChatRoom from './service/ChatRoom.mjs'
 import { users } from './routes/users.mjs';
 import { chats, getGropupContacts } from './routes/chats.mjs';
+import { messages, addMessage } from './routes/messages.mjs';
 import errorHandler from './middleware/errorHandler.mjs';
 import auth from './middleware/auth.mjs';
 
@@ -49,7 +50,7 @@ function processConnection(clientName, ws) {
     ws.on('message', processMessage.bind(undefined, clientName, ws));
 }
 
-function processMessage(clientName, ws, message) {
+async function processMessage(clientName, ws, message) {
     try {
         const messageObj = JSON.parse(message.toString());
         const to = messageObj.group || messageObj.to;
@@ -57,13 +58,14 @@ function processMessage(clientName, ws, message) {
         if (!text) {
             ws.send("your message doesn't contain text")
         } else {
-            const objSend = JSON.stringify({ from: clientName, text });
+            const sendingTime = new Date();
+            const messageId = await addMessage(messageObj, sendingTime, clientName);
+            const objSend = JSON.stringify({ from: clientName, text, sendingTime, messageId });
             if (messageObj.group) {
                 sendMessageToChatGroup(objSend, to, ws)
             } else {
                 sendMessageToClient(objSend, to, ws);
             }
-            // add message to db
         }
     } catch (error) {
         ws.send('wrong message structure');

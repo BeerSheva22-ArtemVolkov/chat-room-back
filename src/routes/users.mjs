@@ -19,7 +19,6 @@ users.use(validate(schema))
 // addAccount
 // users.post('', authVerification("ADMIN_ACCOUNTS"), valid,  asyncHandler(async (req, res) => {
 users.post('', asyncHandler(async (req, res) => {
-    console.log(req.body);
     const accountRes = await usersService.addAccount(req.body);
     if (accountRes == null) {
         res.status(400);
