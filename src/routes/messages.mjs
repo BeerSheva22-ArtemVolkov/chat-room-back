@@ -24,8 +24,8 @@ messages.post('', asyncHandler(async (req, res) => {
 
 // getMessages
 messages.get('', authVerification("USER"), asyncHandler(async (req, res) => {
-    const conditions = req.body;
-    const result = await messageService.getMessages(conditions.from, conditions.to, conditions.group, conditions.dateTimeFrom, conditions.dateTimeTo);
+    console.log('getting');
+    const result = await messageService.getMessages(req.headers.from, req.headers.to, req.headers.group, req.headers.dateTimeFrom, req.headers.dateTimeTo);
     res.status(200).send(result)
 }))
 

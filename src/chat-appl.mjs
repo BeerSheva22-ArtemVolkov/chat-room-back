@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import crypto from 'node:crypto'
 import expressWs from 'express-ws'
 import ChatRoom from './service/ChatRoom.mjs'
+import cors from 'cors'
 import { users } from './routes/users.mjs';
 import { chats, getGropupContacts } from './routes/chats.mjs';
 import { messages, addMessage } from './routes/messages.mjs';
@@ -13,6 +14,7 @@ const app = express();
 const expressWsInstant = expressWs(app);
 const chatRoom = new ChatRoom();
 
+app.use(cors());
 app.use(bodyParser.json()); // Разбор JSON-данных
 app.use(auth);
 
@@ -24,17 +26,19 @@ app.use('/users', users);
 app.use('/chats', chats);
 app.use('/messages', messages);
 
-app.ws('/contacts/websocket', (ws, req, next) => {
+app.ws('/contacts/websocket/:userName', (ws, req, next) => {
     // req.query - это то что идет после ? в пути запроса (аналог pathVariables из Spring)
     // req.params - это должна быть часть запроса и вместо "/contacts/websocket" должно быть "/contacts/websocket/:id" (аналог RequestParams из Spring)
     // ws.protocol - это  (аналог body из Spring)
-    const clientName = req.headers.username
-    let connctionId
-    if (!clientName) {
+    console.log('contacts/websocket');
+    // const clientName = req.headers.username
+    const userName = req.params.userName
+    console.log(userName);
+    if (!userName) {
         ws.send("must be nickname");
         ws.close();
     } else {
-        processConnection(clientName, ws);
+        processConnection(userName, ws);
     }
 })
 
@@ -42,15 +46,15 @@ app.ws('/contacts/websocket/close', (ws, req) => {
     ws.close();
 })
 
-function processConnection(clientName, ws) {
+function processConnection(userName, ws) {
     const connectionId = crypto.randomUUID();
-    chatRoom.addConnection(clientName, connectionId, ws);
+    chatRoom.addConnection(userName, connectionId, ws);
     ws.on('close', () => chatRoom.removeConnection(connectionId));
     // ws.on('message', message => chatRoom.getAllWebSockets().forEach(ws => ws.send(message)));
-    ws.on('message', processMessage.bind(undefined, clientName, ws));
+    ws.on('message', processMessage.bind(undefined, userName, ws));
 }
 
-async function processMessage(clientName, ws, message) {
+async function processMessage(userName, ws, message) {
     try {
         const messageObj = JSON.parse(message.toString());
         const to = messageObj.group || messageObj.to;
@@ -59,8 +63,8 @@ async function processMessage(clientName, ws, message) {
             ws.send("your message doesn't contain text")
         } else {
             const sendingTime = new Date();
-            const messageId = await addMessage(messageObj, sendingTime, clientName);
-            const objSend = JSON.stringify({ from: clientName, text, sendingTime, messageId });
+            const messageId = await addMessage(messageObj, sendingTime, userName);
+            const objSend = JSON.stringify({ from: userName, text, sendingTime, messageId });
             if (messageObj.group) {
                 sendMessageToChatGroup(objSend, to, ws)
             } else {

@@ -39,19 +39,25 @@ export default class MessageService {
         let res
         const dtf = new Date(dateTimeFrom);
         const dtt = new Date(dateTimeTo);
-        if (to) {
-            if (dateTimeFrom) {
-                res = this.#collection.find({ from, 'messageObj.to': to, sendingDateTime: { $gte: dtf, $lte: dtt } })
-            } else {
-                res = this.#collection.find({ from, 'messageObj.to': to })
-            }
-        } else {
-            if (dateTimeFrom) {
-                res = this.#collection.find({ from, 'messageObj.group': group, sendingDateTime: { $gte: dtf, $lte: dtt } })
-            } else {
-                res = this.#collection.find({ from, 'messageObj.group': group })
-            }
-        }
+        res = this.#collection.find({
+            ...from && { from },
+            ...to && { 'messageObj.to': to },
+            ...group && { 'messageObj.group': group },
+            ...dateTimeFrom && dateTimeTo && { sendingDateTime: { $gte: dtf, $lte: dtt } }
+        })
+        // if (to) {
+        //     if (dateTimeFrom) {
+        //         res = this.#collection.find({ from, 'messageObj.to': to, sendingDateTime: { $gte: dtf, $lte: dtt } })
+        //     } else {
+        //         res = this.#collection.find({ from, 'messageObj.to': to })
+        //     }
+        // } else {
+        //     if (dateTimeFrom) {
+        //         res = this.#collection.find({ from, 'messageObj.group': group, sendingDateTime: { $gte: dtf, $lte: dtt } })
+        //     } else {
+        //         res = this.#collection.find({ from, 'messageObj.group': group })
+        //     }
+        // }
         res = await res.toArray();
         // if (dateTimeFrom) {
         //     res = res.filter(r => r.sendingDateTime.getTime() >= dtf.getTime() && r.sendingDateTime.getTime() <= dtt.getTime())
