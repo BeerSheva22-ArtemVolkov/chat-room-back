@@ -35,29 +35,53 @@ export default class MessageService {
         return addedMessage;
     }
 
-    async getMessages(from, to, group, dateTimeFrom, dateTimeTo) {
+    async getMessages(from, to, group, dateTimeFrom, dateTimeTo, filterFrom) {
         let res
         const dtf = new Date(dateTimeFrom);
         const dtt = new Date(dateTimeTo);
-        res = this.#collection.find({
-            ...from && { from },
-            ...to && { 'messageObj.to': to },
-            ...group && { 'messageObj.group': group },
-            ...dateTimeFrom && dateTimeTo && { sendingDateTime: { $gte: dtf, $lte: dtt } }
-        })
-        // if (to) {
-        //     if (dateTimeFrom) {
-        //         res = this.#collection.find({ from, 'messageObj.to': to, sendingDateTime: { $gte: dtf, $lte: dtt } })
-        //     } else {
-        //         res = this.#collection.find({ from, 'messageObj.to': to })
-        //     }
-        // } else {
-        //     if (dateTimeFrom) {
-        //         res = this.#collection.find({ from, 'messageObj.group': group, sendingDateTime: { $gte: dtf, $lte: dtt } })
-        //     } else {
-        //         res = this.#collection.find({ from, 'messageObj.group': group })
-        //     }
-        // }
+        console.log(from, to, group, dateTimeFrom, dateTimeTo, filterFrom);
+        if (to) {
+            res = this.#collection.find({
+                $and: [
+                    {
+                        $or: [
+                            {
+                                ...from && { from },
+                                ...to && { "messageObj.to": to }
+                            },
+                            {
+                                ...to && { from: to },
+                                ...from && { "messageObj.to": from }
+                            }
+                        ]
+                    }, {
+                        ...dateTimeFrom && dateTimeTo && { sendingDateTime: { $gte: dtf, $lte: dtt } }
+                    }, {
+                        ...filterFrom && { from: filterFrom }
+                    }
+                ]
+            })
+        } else {
+            res = this.#collection.find({
+                $and: [
+                    {
+                        ...group && { "messageObj.group": group }
+                    }, {
+                        ...dateTimeFrom && dateTimeTo && { sendingDateTime: { $gte: dtf, $lte: dtt } }
+                    }, {
+                        ...filterFrom && { from: filterFrom }
+                    }
+                ]
+            })
+        }
+
+
+        // res = this.#collection.find({
+        //     ...from && { from },
+        //     ...to && { 'messageObj.to': to },
+        //     ...group && { 'messageObj.group': group },
+        //     ...dateTimeFrom && dateTimeTo && { sendingDateTime: { $gte: dtf, $lte: dtt } }
+        // })
         res = await res.toArray();
         // if (dateTimeFrom) {
         //     res = res.filter(r => r.sendingDateTime.getTime() >= dtf.getTime() && r.sendingDateTime.getTime() <= dtt.getTime())

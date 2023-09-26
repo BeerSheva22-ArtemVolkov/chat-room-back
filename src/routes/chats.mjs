@@ -144,11 +144,22 @@ chats.post('/requests/:chatname', authVerification("USER"), asyncHandler(async (
     res.status(200).send(result);
 }));
 
-export async function getGropupContacts(groupName) {
+chats.get('', authVerification("USER"), asyncHandler(async (req, res) => {
+    const requesterName = req.user.username;
+    const result = await getUserGroups(requesterName);
+    res.status(200).send(result);
+}));
+
+export async function getGroupContacts(groupName) {
     const chatFound = await chatsService.chatDetails(groupName);
     if (!chatFound) {
         res.status(403);
         throw `Chat <${groupName}> not found`;
     }
     return chatFound.adminIds.concat(chatFound.membersIds)
+}
+
+export async function getUserGroups(username) {
+    const groups = await chatsService.getUserGroups(username)
+    return groups;
 }

@@ -25,7 +25,6 @@ users.post('', asyncHandler(async (req, res) => {
         throw `account ${req.body.username} already exists`
     }
     res.status(201).send(accountRes);
-
 }));
 
 users.post("/login", asyncHandler(
@@ -39,3 +38,12 @@ users.post("/login", asyncHandler(
         res.send({ accessToken });
     }
 ))
+
+users.get('', authVerification("USER"), asyncHandler(async (req, res) => {
+    const users = await getAllUsers();
+    res.status(200).send(users);
+}))
+
+export async function getAllUsers() {
+    return await usersService.getAllUsers();
+}

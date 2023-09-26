@@ -49,6 +49,14 @@ export default class UsersService {
         return accessToken;
     }
 
+    async getAllUsers() {
+        let users = this.#collection.find({});
+        users = await users.toArray();
+        return users.map(user => {
+            return user._id
+        });
+    }
+
 }
 
 function getJwt(username, roles) {

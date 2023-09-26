@@ -4,11 +4,12 @@ import crypto from 'node:crypto'
 import expressWs from 'express-ws'
 import ChatRoom from './service/ChatRoom.mjs'
 import cors from 'cors'
-import { users } from './routes/users.mjs';
-import { chats, getGropupContacts } from './routes/chats.mjs';
+import { users, getAllUsers } from './routes/users.mjs';
+import { chats, getGroupContacts, getUserGroups } from './routes/chats.mjs';
 import { messages, addMessage } from './routes/messages.mjs';
 import errorHandler from './middleware/errorHandler.mjs';
 import auth from './middleware/auth.mjs';
+import asyncHandler from 'express-async-handler'
 
 const app = express();
 const expressWsInstant = expressWs(app);
@@ -25,6 +26,12 @@ app.get('/contacts', (req, res) => {
 app.use('/users', users);
 app.use('/chats', chats);
 app.use('/messages', messages);
+
+app.get('/groups', asyncHandler(async (req, res) => {
+    const groups = await getUserGroups(req.user.username)
+    const personal = await getAllUsers();
+    res.send({ groups, personal });
+}))
 
 app.ws('/contacts/websocket/:userName', (ws, req, next) => {
     // req.query - это то что идет после ? в пути запроса (аналог pathVariables из Spring)
@@ -80,17 +87,19 @@ function sendAll(message) {
     chatRoom.getClientsWebSockets().forEach(ws => ws.send(message));
 }
 
-function sendMessageToClient(message, client, socketFrom) {
+function sendMessageToClient(message, client, socketFrom, from) {
     const clientSockets = chatRoom.getClientWebSockets(client);
     if (clientSockets.length == 0) {
         socketFrom.send(client + " contact doesn't exists")
     } else {
+        // const currentUserSockets = chatRoom.getClientWebSockets(client);
         clientSockets.forEach(s => s.send(message));
+        socketFrom.send("Message send")
     }
 }
 
 async function sendMessageToChatGroup(message, groupName, socketFrom) {
-    const members = await getGropupContacts(groupName);
+    const members = await getGroupContacts(groupName);
     const clientSockets = chatRoom.getClientsWebSockets(members);
     clientSockets.forEach(ws => ws.send(message));
 }

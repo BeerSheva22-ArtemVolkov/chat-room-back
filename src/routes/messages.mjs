@@ -25,7 +25,7 @@ messages.post('', asyncHandler(async (req, res) => {
 // getMessages
 messages.get('', authVerification("USER"), asyncHandler(async (req, res) => {
     console.log('getting');
-    const result = await messageService.getMessages(req.headers.from, req.headers.to, req.headers.group, req.headers.dateTimeFrom, req.headers.dateTimeTo);
+    const result = await messageService.getMessages(req.headers.from, req.headers.to, req.headers.group, req.headers.dtf, req.headers.dtt, req.headers.filter);
     res.status(200).send(result)
 }))
 
@@ -42,16 +42,16 @@ messages.delete('/:messageId', authVerification("USER"), asyncHandler(async (req
         throw `Message with id <${messageId}> not found`
     }
     let result
-    if (from == requesterName){
+    if (from == requesterName) {
         // удаляем свое сообщение 
         result = await messageService.deleteMessage(messageId);
-    } else if (chatName && (await chatsService.chatDetails(chatName)).adminIds.includes(from)){
+    } else if (chatName && (await chatsService.chatDetails(chatName)).adminIds.includes(from)) {
         // удаляем сообщение как админ чата
         result = await messageService.deleteMessage(messageId);
     } else {
         res.status(401)
         throw `You have no rihts to delete this message`
-    }    
+    }
     res.status(200).send(result);
 }))
 

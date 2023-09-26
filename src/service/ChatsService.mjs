@@ -101,4 +101,10 @@ export default class ChatsService {
         return chat;
     }
 
+    async getUserGroups(username) {
+        let res = this.#collection.find({ $or: [{ membersIds: username }, { adminIds: username }] })
+        res = await res.toArray();
+        return res
+    }
+
 }
