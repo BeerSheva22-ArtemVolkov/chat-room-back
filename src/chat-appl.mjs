@@ -14,6 +14,7 @@ import asyncHandler from 'express-async-handler'
 const app = express();
 const expressWsInstant = expressWs(app);
 const chatRoom = new ChatRoom();
+let globalWS
 
 app.use(cors());
 app.use(bodyParser.json()); // Разбор JSON-данных
@@ -33,6 +34,11 @@ app.get('/groups', asyncHandler(async (req, res) => {
     res.send({ groups, personal });
 }))
 
+app.ws('/global', (ws, req) => {
+    globalWS = ws
+    ws.send(JSON.stringify(chatRoom.getClients()))
+})
+
 app.ws('/contacts/websocket/:userName', (ws, req, next) => {
     // req.query - это то что идет после ? в пути запроса (аналог pathVariables из Spring)
     // req.params - это должна быть часть запроса и вместо "/contacts/websocket" должно быть "/contacts/websocket/:id" (аналог RequestParams из Spring)
@@ -46,17 +52,17 @@ app.ws('/contacts/websocket/:userName', (ws, req, next) => {
         ws.close();
     } else {
         processConnection(userName, ws);
+        globalWS.send(JSON.stringify(chatRoom.getClients()))
     }
-})
-
-app.ws('/contacts/websocket/close', (ws, req) => {
-    ws.close();
 })
 
 function processConnection(userName, ws) {
     const connectionId = crypto.randomUUID();
     chatRoom.addConnection(userName, connectionId, ws);
-    ws.on('close', () => chatRoom.removeConnection(connectionId));
+    ws.on('close', () => {
+        chatRoom.removeConnection(connectionId)
+        globalWS.send(JSON.stringify(chatRoom.getClients()))
+    });
     // ws.on('message', message => chatRoom.getAllWebSockets().forEach(ws => ws.send(message)));
     ws.on('message', processMessage.bind(undefined, userName, ws));
 }

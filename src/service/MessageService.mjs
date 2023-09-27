@@ -39,7 +39,6 @@ export default class MessageService {
         let res
         const dtf = new Date(dateTimeFrom);
         const dtt = new Date(dateTimeTo);
-        console.log(from, to, group, dateTimeFrom, dateTimeTo, filterFrom);
         if (to) {
             res = this.#collection.find({
                 $and: [
