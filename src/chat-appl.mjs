@@ -14,7 +14,7 @@ import asyncHandler from 'express-async-handler'
 const app = express();
 const expressWsInstant = expressWs(app);
 const chatRoom = new ChatRoom();
-let globalWS
+const globalWS = {}
 
 app.use(cors());
 app.use(bodyParser.json()); // Разбор JSON-данных
@@ -35,36 +35,49 @@ app.get('/groups', asyncHandler(async (req, res) => {
 }))
 
 app.ws('/global', (ws, req) => {
-    globalWS = ws
-    ws.send(JSON.stringify(chatRoom.getClients()))
+    const uid = Math.random().toString(36).substring(2, 7);
+    globalWS[uid] = ws
+    refreshActiveClients()
+    ws.on('close', () => {
+        console.log('global ws closing');
+        delete globalWS[uid]
+    })
 })
 
 app.ws('/contacts/websocket/:userName', (ws, req, next) => {
     // req.query - это то что идет после ? в пути запроса (аналог pathVariables из Spring)
     // req.params - это должна быть часть запроса и вместо "/contacts/websocket" должно быть "/contacts/websocket/:id" (аналог RequestParams из Spring)
     // ws.protocol - это  (аналог body из Spring)
-    console.log('contacts/websocket');
     // const clientName = req.headers.username
     const userName = req.params.userName
-    console.log(userName);
     if (!userName) {
         ws.send("must be nickname");
         ws.close();
     } else {
         processConnection(userName, ws);
-        globalWS.send(JSON.stringify(chatRoom.getClients()))
+        refreshActiveClients();
     }
 })
 
 function processConnection(userName, ws) {
     const connectionId = crypto.randomUUID();
     chatRoom.addConnection(userName, connectionId, ws);
+    // ws.on('connection', () => {
+    //     console.log('ws connected');
+    // })
     ws.on('close', () => {
+        console.log('disconnect');
         chatRoom.removeConnection(connectionId)
-        globalWS.send(JSON.stringify(chatRoom.getClients()))
+        refreshActiveClients();
     });
     // ws.on('message', message => chatRoom.getAllWebSockets().forEach(ws => ws.send(message)));
     ws.on('message', processMessage.bind(undefined, userName, ws));
+}
+
+function refreshActiveClients() {
+    const activeClients = chatRoom.getClients();
+    console.log(activeClients);
+    Object.values(globalWS).forEach(ws => ws.send(JSON.stringify(activeClients)))
 }
 
 async function processMessage(userName, ws, message) {
