@@ -17,7 +17,7 @@ chats.use(validate(schema))
 // addChat
 // users.post('', authVerification("ADMIN_ACCOUNTS"), valid,  asyncHandler(async (req, res) => {
 chats.post('', authVerification("USER"), asyncHandler(async (req, res) => {
-    const chatRes = await chatsService.createChat(req.body.chatName, req.user.username, req.body.isOpened);
+    const chatRes = await chatsService.createChat(req.body.chatName, req.user.username, req.body.isOpened, req.body.adminsIds, req.body.membersIds);
     if (chatRes == null) {
         res.status(400);
         throw `chat ${req.body.chatName} already exists`

@@ -21,13 +21,14 @@ export default class ChatsService {
         this.#collection = connection.getCollection('chats');
     }
 
-    async createChat(chatName, adminId, isOpened) {
+    async createChat(chatName, adminId, isOpened, adminIds, membersIds) {
+        console.log(chatName, adminId, isOpened, adminIds, membersIds);
         let chat;
         if (await this.#collection.findOne({ chatName })) {
             throw `Collection <${chatName}> already exists`
         }
         try {
-            chat = await this.#collection.insertOne({ chatName, adminIds: [adminId], isOpened, membersIds: [], blockedIds: [], waitingIds: [] });
+            chat = await this.#collection.insertOne({ chatName, adminIds: [adminId, ...adminIds], isOpened, membersIds, blockedIds: [], waitingIds: [] });
         } catch (error) {
             // if (error.code == 11000) {
             //     account = null;
