@@ -21,14 +21,33 @@ export default class ChatsService {
         this.#collection = connection.getCollection('chats');
     }
 
-    async createChat(chatName, adminId, isOpened, adminIds, membersIds) {
-        console.log(chatName, adminId, isOpened, adminIds, membersIds);
+    async createChat(chatName, adminId, isOpened, adminsIds, membersIds) {
         let chat;
         if (await this.#collection.findOne({ chatName })) {
             throw `Collection <${chatName}> already exists`
         }
         try {
-            chat = await this.#collection.insertOne({ chatName, adminIds: [adminId, ...adminIds], isOpened, membersIds, blockedIds: [], waitingIds: [] });
+            chat = await this.#collection.insertOne({ chatName, adminsIds: [adminId, ...adminsIds], isOpened, membersIds, blockedIds: [], waitingIds: [] });
+        } catch (error) {
+            // if (error.code == 11000) {
+            //     account = null;
+            // } else {
+            throw error;
+            // }
+        }
+        return chat;
+    }
+
+    async updateChat(chatName, adminId, isOpened, adminsIds, membersIds) {
+        if (!adminsIds.includes(adminId)) {
+            adminsIds.push(adminId)
+        }
+        let chat;
+        if (!await this.#collection.findOne({ chatName })) {
+            throw `Chat not found`
+        }
+        try {
+            chat = await this.#collection.updateOne({ chatName }, { $set: { adminsIds, isOpened, membersIds } });
         } catch (error) {
             // if (error.code == 11000) {
             //     account = null;
@@ -49,7 +68,7 @@ export default class ChatsService {
         }
         let res
         try {
-            res = await this.#collection.updateOne({ chatName }, role == "admin" ? { $push: { adminIds: username } } : { $push: { membersIds: username } })
+            res = await this.#collection.updateOne({ chatName }, role == "admin" ? { $push: { adminsIds: username } } : { $push: { membersIds: username } })
         } catch (error) {
             throw error
         }
@@ -62,7 +81,8 @@ export default class ChatsService {
         }
         let res
         try {
-            res = await this.#collection.updateOne({ chatName }, role == "admin" ? { $pull: { adminIds: username } } : { $pull: { membersIds: username } })
+            // res = await this.#collection.updateOne({ chatName }, role == "admin" ? { $pull: { adminsIds: username } } : { $pull: { membersIds: username } })
+            res = await this.#collection.updateOne({ chatName }, { $pull: { adminsIds: username, membersIds: username } })
         } catch (error) {
             throw error
         }
@@ -103,7 +123,7 @@ export default class ChatsService {
     }
 
     async getUserGroups(username) {
-        let res = this.#collection.find({ $or: [{ membersIds: username }, { adminIds: username }] })
+        let res = this.#collection.find({ $or: [{ membersIds: username }, { adminsIds: username }] })
         res = await res.toArray();
         return res
     }

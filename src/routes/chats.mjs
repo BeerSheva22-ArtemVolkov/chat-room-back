@@ -25,6 +25,15 @@ chats.post('', authVerification("USER"), asyncHandler(async (req, res) => {
     res.status(201).send(chatRes);
 }));
 
+chats.put('', authVerification("USER"), asyncHandler(async (req, res) => {
+    const chatRes = await chatsService.updateChat(req.body.chatName, req.user.username, req.body.isOpened, req.body.adminsIds, req.body.membersIds);
+    if (chatRes == null) {
+        res.status(400);
+        throw `chat ${req.body.chatName} not found`
+    }
+    res.status(201).send(chatRes);
+}));
+
 // addUser
 chats.post('/addUser/:chatname', authVerification("USER"), asyncHandler(async (req, res) => {
     const chatName = req.params.chatname;
@@ -38,7 +47,7 @@ chats.post('/addUser/:chatname', authVerification("USER"), asyncHandler(async (r
         res.status(403);
         throw `Chat <${chatName}> not found`;
     }
-    if (!chatFound.adminIds.some(id => id == requesterName)) {
+    if (!chatFound.adminsIds.some(id => id == requesterName)) {
         res.status(403);
         throw 'You have not rigths to adding new admin to chat';
     }
@@ -53,6 +62,7 @@ chats.post('/addUser/:chatname', authVerification("USER"), asyncHandler(async (r
 // deleteUser
 chats.delete('/removeUser/:chatname', authVerification("USER"), asyncHandler(async (req, res) => {
     const chatName = req.params.chatname;
+    const userToDelete = req.body.userName;
     if (!chatName) {
         res.status(400);
         throw `Chat name is not provided`
@@ -63,11 +73,11 @@ chats.delete('/removeUser/:chatname', authVerification("USER"), asyncHandler(asy
         res.status(403);
         throw `Chat <${chatName}> not found`;
     }
-    if (!chatFound.adminIds.some(id => id == requesterName)) {
+    if (requesterName != userToDelete && !chatFound.adminsIds.some(id => id == requesterName)) {
         res.status(403);
         throw 'You have not rigths to adding new admin to chat';
     }
-    const chatRes = await chatsService.deleteUserFromChat(chatName, req.body.username, req.body.role);
+    const chatRes = await chatsService.deleteUserFromChat(chatName, userToDelete, req.body.role);
     if (chatRes == null) {
         res.status(400);
         throw `error adding new admin`
@@ -114,7 +124,7 @@ chats.get('/requests/:chatname', authVerification("USER"), asyncHandler(async (r
         res.status(403);
         throw `Chat <${chatName}> not found`;
     }
-    if (!chatFound.adminIds.some(id => id == requesterName)) {
+    if (!chatFound.adminsIds.some(id => id == requesterName)) {
         res.status(403);
         throw 'You have not rigths to adding new admin to chat';
     }
@@ -134,7 +144,7 @@ chats.post('/requests/:chatname', authVerification("USER"), asyncHandler(async (
         res.status(403);
         throw `Chat <${chatName}> not found`;
     }
-    if (!chatFound.adminIds.some(id => id == requesterName)) {
+    if (!chatFound.adminsIds.some(id => id == requesterName)) {
         res.status(403);
         throw 'You have not rigths to adding new admin to chat';
     }
@@ -156,7 +166,7 @@ export async function getGroupContacts(groupName) {
         res.status(403);
         throw `Chat <${groupName}> not found`;
     }
-    return chatFound.adminIds.concat(chatFound.membersIds)
+    return chatFound.adminsIds.concat(chatFound.membersIds)
 }
 
 export async function getUserGroups(username) {
