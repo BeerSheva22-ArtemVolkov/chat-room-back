@@ -45,7 +45,7 @@ messages.delete('/:messageId', authVerification("USER"), asyncHandler(async (req
     if (from == requesterName) {
         // удаляем свое сообщение 
         result = await messageService.deleteMessage(messageId);
-    } else if (chatName && (await chatsService.chatDetails(chatName)).adminsIds.includes(from)) {
+    } else if (chatName && (await chatsService.chatDetails(chatName)).adminsIds.includes(requesterName)) {
         // удаляем сообщение как админ чата
         result = await messageService.deleteMessage(messageId);
     } else {
