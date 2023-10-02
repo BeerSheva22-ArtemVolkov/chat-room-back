@@ -99,16 +99,19 @@ chats.post('/join/:chatname', authVerification("USER"), asyncHandler(async (req,
         throw `Chat <${chatName}> not found`;
     }
     let result;
+    let resultString;
     if (chatFound.isOpened) {
         result = await chatsService.addUserToChat(chatName, requesterName, "user");
+        resultString = `Welcome to chat <${chatName}>`
     } else {
         result = await chatsService.requestAccessToChat(chatName, requesterName);
+        resultString = `Request to chat <${chatName}> sent`
     }
     if (result == null) {
         res.status(400);
         throw `error joining to chat`
     }
-    res.status(200).send(result);
+    res.status(200).send({ message: resultString });
 }));
 
 // getRequests
@@ -155,8 +158,10 @@ chats.post('/requests/:chatname', authVerification("USER"), asyncHandler(async (
 }));
 
 chats.get('', authVerification("USER"), asyncHandler(async (req, res) => {
-    const requesterName = req.user.username;
-    const result = await getUserGroups(requesterName);
+    // const requesterName = req.user.username;
+    // const result = await getUserGroups(requesterName);
+    const filterName = req.headers.filtername
+    const result = await chatsService.getAllChatGroups(filterName)
     res.status(200).send(result);
 }));
 

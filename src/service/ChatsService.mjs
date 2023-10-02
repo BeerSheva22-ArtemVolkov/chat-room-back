@@ -128,4 +128,10 @@ export default class ChatsService {
         return res
     }
 
+    async getAllChatGroups(filterName) {
+        let res = this.#collection.find({ chatName: { $regex: filterName } })
+        res = await res.toArray();
+        return res
+    }
+
 }

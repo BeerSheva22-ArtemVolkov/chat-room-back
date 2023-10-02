@@ -28,7 +28,7 @@ app.use('/users', users);
 app.use('/chats', chats);
 app.use('/messages', messages);
 
-app.get('/groups', asyncHandler(async (req, res) => {
+app.get('/allChats', asyncHandler(async (req, res) => {
     const groups = await getUserGroups(req.user.username)
     const personal = await getAllUsers();
     res.send({ groups, personal });
