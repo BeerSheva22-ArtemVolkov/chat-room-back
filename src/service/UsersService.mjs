@@ -52,9 +52,12 @@ export default class UsersService {
     async getAllUsers() {
         let users = this.#collection.find({});
         users = await users.toArray();
-        return users.map(user => {
-            return user._id
-        });
+        return users
+    }
+
+    async updateAccount(image, username) {
+        const res = await this.#collection.updateOne({ _id: username }, { $set: { image } })
+        return res
     }
 
 }

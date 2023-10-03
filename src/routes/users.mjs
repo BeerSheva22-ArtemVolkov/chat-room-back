@@ -4,9 +4,12 @@ import Joi from 'joi'
 import UsersService from '../service/UsersService.mjs'
 import { validate } from '../middleware/validation.mjs';
 import authVerification from '../middleware/authVerification.mjs'
+import multer from 'multer';
 
 export const users = express.Router();
 const usersService = new UsersService();
+const storage = multer.memoryStorage(); // Сохранение файла в памяти
+const upload = multer({ storage });
 
 const schema = Joi.object({
     username: Joi.string().email().required(),
@@ -44,6 +47,14 @@ users.get('', authVerification("USER"), asyncHandler(async (req, res) => {
     res.status(200).send(users);
 }))
 
+users.put('', authVerification("USER"), asyncHandler(async (req, res) => {
+    const username = req.user.username
+    const image = req.body.image;
+    const result = await usersService.updateAccount(image, username)
+    res.status(200).send(result);
+}))
+
 export async function getAllUsers() {
     return await usersService.getAllUsers();
 }
+

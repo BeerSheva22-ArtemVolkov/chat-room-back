@@ -47,7 +47,9 @@ export default class ChatsService {
             throw `Chat not found`
         }
         try {
-            chat = await this.#collection.updateOne({ chatName }, { $set: { adminsIds, isOpened, membersIds } });
+            //TODO
+            // обнуление waitingIds - временное решение для одобрения/отклонения реквество
+            chat = await this.#collection.updateOne({ chatName }, { $set: { adminsIds, isOpened, membersIds, waitingIds: [] } });
         } catch (error) {
             // if (error.code == 11000) {
             //     account = null;
