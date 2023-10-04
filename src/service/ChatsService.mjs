@@ -38,7 +38,7 @@ export default class ChatsService {
         return chat;
     }
 
-    async updateChat(chatName, adminId, isOpened, adminsIds, membersIds) {
+    async updateChat(chatName, adminId, isOpened, adminsIds, membersIds, image) {
         if (!adminsIds.includes(adminId)) {
             adminsIds.push(adminId)
         }
@@ -49,7 +49,7 @@ export default class ChatsService {
         try {
             //TODO
             // обнуление waitingIds - временное решение для одобрения/отклонения реквество
-            chat = await this.#collection.updateOne({ chatName }, { $set: { adminsIds, isOpened, membersIds, waitingIds: [] } });
+            chat = await this.#collection.updateOne({ chatName }, { $set: { adminsIds, isOpened, membersIds, waitingIds: [], image } });
         } catch (error) {
             // if (error.code == 11000) {
             //     account = null;

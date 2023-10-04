@@ -26,7 +26,7 @@ chats.post('', authVerification("USER"), asyncHandler(async (req, res) => {
 }));
 
 chats.put('', authVerification("USER"), asyncHandler(async (req, res) => {
-    const chatRes = await chatsService.updateChat(req.body.chatName, req.user.username, req.body.isOpened, req.body.adminsIds, req.body.membersIds);
+    const chatRes = await chatsService.updateChat(req.body.chatName, req.user.username, req.body.isOpened, req.body.adminsIds, req.body.membersIds, req.body.image);
     if (chatRes == null) {
         res.status(400);
         throw `chat ${req.body.chatName} not found`
