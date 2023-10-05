@@ -73,18 +73,7 @@ export default class MessageService {
                 ]
             })
         }
-
-
-        // res = this.#collection.find({
-        //     ...from && { from },
-        //     ...to && { 'messageObj.to': to },
-        //     ...group && { 'messageObj.group': group },
-        //     ...dateTimeFrom && dateTimeTo && { sendingDateTime: { $gte: dtf, $lte: dtt } }
-        // })
         res = await res.toArray();
-        // if (dateTimeFrom) {
-        //     res = res.filter(r => r.sendingDateTime.getTime() >= dtf.getTime() && r.sendingDateTime.getTime() <= dtt.getTime())
-        // }
         return res;
     }
 

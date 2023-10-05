@@ -20,26 +20,24 @@ const schema = Joi.object({
 users.use(validate(schema))
 
 // addAccount
-// users.post('', authVerification("ADMIN_ACCOUNTS"), valid,  asyncHandler(async (req, res) => {
 users.post('', asyncHandler(async (req, res) => {
-    const accountRes = await usersService.addAccount(req.body);
-    if (accountRes == null) {
+    const accessToken = await usersService.addAccount(req.body);
+    if (accessToken == null) {
         res.status(400);
         throw `account ${req.body.username} already exists`
     }
-    res.status(201).send(accountRes);
+    res.status(201).send({ accessToken });
 }));
 
-users.post("/login", asyncHandler(
-    async (req, res) => {
-        const loginData = req.body;
-        const accessToken = await usersService.login(loginData);
-        if (!accessToken) {
-            res.status(400);
-            throw 'Wrong credentials'
-        }
-        res.send({ accessToken });
+users.post("/login", asyncHandler(async (req, res) => {
+    const loginData = req.body;
+    const accessToken = await usersService.login(loginData);
+    if (!accessToken) {
+        res.status(400);
+        throw 'Wrong credentials'
     }
+    res.send({ accessToken });
+}
 ))
 
 users.get('', authVerification("USER"), asyncHandler(async (req, res) => {

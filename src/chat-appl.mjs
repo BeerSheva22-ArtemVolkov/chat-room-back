@@ -48,7 +48,6 @@ app.ws('/contacts/websocket/:userName', (ws, req, next) => {
     // req.query - это то что идет после ? в пути запроса (аналог pathVariables из Spring)
     // req.params - это должна быть часть запроса и вместо "/contacts/websocket" должно быть "/contacts/websocket/:id" (аналог RequestParams из Spring)
     // ws.protocol - это  (аналог body из Spring)
-    // const clientName = req.headers.username
     const userName = req.params.userName
     if (!userName) {
         ws.send("must be nickname");
@@ -62,15 +61,11 @@ app.ws('/contacts/websocket/:userName', (ws, req, next) => {
 function processConnection(userName, ws) {
     const connectionId = crypto.randomUUID();
     chatRoom.addConnection(userName, connectionId, ws);
-    // ws.on('connection', () => {
-    //     console.log('ws connected');
-    // })
     ws.on('close', () => {
         console.log('disconnect');
         chatRoom.removeConnection(connectionId)
         refreshActiveClients();
     });
-    // ws.on('message', message => chatRoom.getAllWebSockets().forEach(ws => ws.send(message)));
     ws.on('message', processMessage.bind(undefined, userName, ws));
 }
 
@@ -88,9 +83,9 @@ async function processMessage(userName, ws, message) {
         if (!text) {
             ws.send("your message doesn't contain text")
         } else {
-            const sendingTime = new Date();
-            const messageId = await addMessage(messageObj, sendingTime, userName);
-            const objSend = JSON.stringify({ from: userName, text, sendingTime, messageId });
+            const sendingDateTime = new Date();
+            const messageId = await addMessage(messageObj, sendingDateTime, userName);
+            const objSend = JSON.stringify({ _id: messageId, from: userName, messageObj, sendingDateTime });
             if (messageObj.group) {
                 sendMessageToChatGroup(objSend, to, ws)
             } else {
@@ -111,9 +106,8 @@ function sendMessageToClient(message, client, socketFrom, from) {
     if (clientSockets.length == 0) {
         socketFrom.send(client + " contact doesn't exists")
     } else {
-        // const currentUserSockets = chatRoom.getClientWebSockets(client);
         clientSockets.forEach(s => s.send(message));
-        socketFrom.send("Message send")
+        socketFrom.send(message)
     }
 }
 

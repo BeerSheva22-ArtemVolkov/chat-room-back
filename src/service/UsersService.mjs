@@ -23,8 +23,10 @@ export default class UsersService {
 
     async addAccount(account) {
         const accountDB = await toAccountDB(account)
+        let accessToken
         try {
             await this.#collection.insertOne(accountDB);
+            accessToken = getJwt(account.username, account.roles);
         } catch (error) {
             if (error.code == 11000) {
                 account = null;
@@ -32,7 +34,7 @@ export default class UsersService {
                 throw error;
             }
         }
-        return account;
+        return accessToken;
     }
 
     async getAccount(username) {

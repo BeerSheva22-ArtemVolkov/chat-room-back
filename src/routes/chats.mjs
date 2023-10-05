@@ -15,7 +15,6 @@ const schema = Joi.object({
 chats.use(validate(schema))
 
 // addChat
-// users.post('', authVerification("ADMIN_ACCOUNTS"), valid,  asyncHandler(async (req, res) => {
 chats.post('', authVerification("USER"), asyncHandler(async (req, res) => {
     const chatRes = await chatsService.createChat(req.body.chatName, req.user.username, req.body.isOpened, req.body.adminsIds, req.body.membersIds);
     if (chatRes == null) {
@@ -158,8 +157,6 @@ chats.post('/requests/:chatname', authVerification("USER"), asyncHandler(async (
 }));
 
 chats.get('', authVerification("USER"), asyncHandler(async (req, res) => {
-    // const requesterName = req.user.username;
-    // const result = await getUserGroups(requesterName);
     const filterName = req.headers.filtername
     const result = await chatsService.getAllChatGroups(filterName)
     res.status(200).send(result);

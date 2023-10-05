@@ -1,7 +1,5 @@
 import express from 'express'
 import asyncHandler from 'express-async-handler'
-import Joi from 'joi'
-import { validate } from '../middleware/validation.mjs';
 import authVerification from '../middleware/authVerification.mjs'
 import MessageService from '../service/MessageService.mjs';
 import ChatsService from '../service/ChatsService.mjs';
@@ -14,12 +12,7 @@ const chatsService = new ChatsService(); // сделать общим?
 messages.post('', asyncHandler(async (req, res) => {
     const sendingDateTime = new Date();
     let messageId = await addMessage(req.body, sendingDateTime)
-    if (accountRes == null) {
-        res.status(400);
-        throw `account ${req.body.username} already exists`
-    }
     res.status(201).send(messageId);
-
 }));
 
 // getMessages
@@ -50,12 +43,13 @@ messages.delete('/:messageId', authVerification("USER"), asyncHandler(async (req
         result = await messageService.deleteMessage(messageId);
     } else {
         res.status(401)
-        throw `You have no rihts to delete this message`
+        throw `You have no rights to delete this message`
     }
     res.status(200).send(result);
 }))
 
 export async function addMessage(messageObj, sendingDateTime, from) {
     const addedMessage = await messageService.addMessage(messageObj, sendingDateTime, from);
+    console.log(addMessage);
     return addedMessage.insertedId.toString();
 }
