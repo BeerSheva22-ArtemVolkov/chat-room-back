@@ -77,6 +77,12 @@ export default class MessageService {
         return res;
     }
 
+    async getAllMessages() {
+        let messages = this.#collection.find({});
+        messages = await messages.toArray();
+        return messages
+    }
+
     async deleteMessage(messageId) {
         let deletedMessage
         const objId = new ObjectId(messageId)

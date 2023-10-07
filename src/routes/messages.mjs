@@ -17,8 +17,13 @@ messages.post('', asyncHandler(async (req, res) => {
 
 // getMessages
 messages.get('', authVerification("USER"), asyncHandler(async (req, res) => {
-    console.log('getting');
     const result = await messageService.getMessages(req.headers.from, req.headers.to, req.headers.group, req.headers.dtf, req.headers.dtt, req.headers.filter);
+    res.status(200).send(result)
+}))
+
+// getAllMessages
+messages.get('/all', authVerification("ADMIN"), asyncHandler(async (req, res) => {
+    const result = await messageService.getAllMessages();
     res.status(200).send(result)
 }))
 
