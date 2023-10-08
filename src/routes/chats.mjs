@@ -15,7 +15,7 @@ const schema = Joi.object({
 chats.use(validate(schema))
 
 // addChat
-chats.post('', authVerification("USER"), asyncHandler(async (req, res) => {
+chats.post('', authVerification("USER", "ADMIN"), asyncHandler(async (req, res) => {
     const chatRes = await chatsService.createChat(req.body.chatName, req.user.username, req.body.isOpened, req.body.adminsIds, req.body.membersIds);
     if (chatRes == null) {
         res.status(400);
@@ -24,7 +24,7 @@ chats.post('', authVerification("USER"), asyncHandler(async (req, res) => {
     res.status(201).send(chatRes);
 }));
 
-chats.put('', authVerification("USER"), asyncHandler(async (req, res) => {
+chats.put('', authVerification("USER", "ADMIN"), asyncHandler(async (req, res) => {
     const chatRes = await chatsService.updateChat(req.body.chatName, req.user.username, req.body.isOpened, req.body.adminsIds, req.body.membersIds, req.body.image);
     if (chatRes == null) {
         res.status(400);
@@ -34,7 +34,7 @@ chats.put('', authVerification("USER"), asyncHandler(async (req, res) => {
 }));
 
 // addUser
-chats.post('/addUser/:chatname', authVerification("USER"), asyncHandler(async (req, res) => {
+chats.post('/addUser/:chatname', authVerification("USER", "ADMIN"), asyncHandler(async (req, res) => {
     const chatName = req.params.chatname;
     if (!chatName) {
         res.status(400);
@@ -59,7 +59,7 @@ chats.post('/addUser/:chatname', authVerification("USER"), asyncHandler(async (r
 }));
 
 // deleteUser
-chats.delete('/removeUser/:chatname', authVerification("USER"), asyncHandler(async (req, res) => {
+chats.delete('/removeUser/:chatname', authVerification("USER", "ADMIN"), asyncHandler(async (req, res) => {
     const chatName = req.params.chatname;
     const userToDelete = req.body.userName;
     if (!chatName) {
@@ -85,7 +85,7 @@ chats.delete('/removeUser/:chatname', authVerification("USER"), asyncHandler(asy
 }));
 
 // joinToChat
-chats.post('/join/:chatname', authVerification("USER"), asyncHandler(async (req, res) => {
+chats.post('/join/:chatname', authVerification("USER", "ADMIN"), asyncHandler(async (req, res) => {
     const chatName = req.params.chatname;
     if (!chatName) {
         res.status(400);
@@ -114,7 +114,7 @@ chats.post('/join/:chatname', authVerification("USER"), asyncHandler(async (req,
 }));
 
 // getRequests
-chats.get('/requests/:chatname', authVerification("USER"), asyncHandler(async (req, res) => {
+chats.get('/requests/:chatname', authVerification("USER", "ADMIN"), asyncHandler(async (req, res) => {
     const chatName = req.params.chatname;
     if (!chatName) {
         res.status(400);
@@ -134,7 +134,7 @@ chats.get('/requests/:chatname', authVerification("USER"), asyncHandler(async (r
 }));
 
 // permitAccessToChat
-chats.post('/requests/:chatname', authVerification("USER"), asyncHandler(async (req, res) => {
+chats.post('/requests/:chatname', authVerification("USER", "ADMIN"), asyncHandler(async (req, res) => {
     const chatName = req.params.chatname;
     if (!chatName) {
         res.status(400);
@@ -156,7 +156,7 @@ chats.post('/requests/:chatname', authVerification("USER"), asyncHandler(async (
     res.status(200).send(result);
 }));
 
-chats.get('', authVerification("USER"), asyncHandler(async (req, res) => {
+chats.get('', authVerification("USER", "ADMIN"), asyncHandler(async (req, res) => {
     const filterName = req.headers.filtername
     const result = await chatsService.getAllChatGroups(filterName)
     res.status(200).send(result);

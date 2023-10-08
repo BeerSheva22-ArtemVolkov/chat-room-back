@@ -40,12 +40,12 @@ users.post("/login", asyncHandler(async (req, res) => {
 }
 ))
 
-users.get('', authVerification("USER"), asyncHandler(async (req, res) => {
+users.get('', authVerification("USER", "ADMIN"), asyncHandler(async (req, res) => {
     const users = await getAllUsers();
     res.status(200).send(users);
 }))
 
-users.put('', authVerification("USER"), asyncHandler(async (req, res) => {
+users.put('', authVerification("USER", "ADMIN"), asyncHandler(async (req, res) => {
     const username = req.user.username
     const image = req.body.image;
     const result = await usersService.updateAccount(image, username)
